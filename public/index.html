@@ -1,274 +1,812 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranzz API - Laporan Analisis Interaktif</title>
+    <title>Ranzz API | Layanan REST API Profesional</title>
     
-    <!-- Chosen Palette: Warm Neutrals (Stone/Zinc) with Indigo & Emerald Accents -->
-    <!-- Application Structure Plan: Dashboard structure chosen to synthesize API performance metrics. Top section provides immediate context via dynamic KPI cards. Middle section splits into two visual panes (Trend & Distribution) for rapid comparison. A time-range filter acts as the primary interactive driver, dynamically updating all views to facilitate temporal exploration without page reloads. -->
-    <!-- Visualization & Content Choices: Traffic Trend -> Goal: Change over time -> Line Chart -> Allows temporal comparison -> Chart.js. Category Distribution -> Goal: Proportions -> Doughnut Chart -> Shows clear segment weight -> Chart.js. KPI Cards -> Goal: Inform -> Dynamic Text -> Immediate high-level understanding -> Vanilla JS. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Konfigurasi Tema Tailwind -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
                     colors: {
-                        brand: '#4f46e5',
-                        brandlight: '#e0e7ff',
-                        dark: '#1c1917',
-                        paper: '#fafaf9'
+                        dark: '#0B0F19',
+                        card: '#151C2C',
+                        primary: '#6366F1',
+                        secondary: '#A855F7'
                     }
                 }
             }
         }
     </script>
+
     <style>
-        body {
-            background-color: #fafaf9;
-            color: #1c1917;
-            -webkit-font-smoothing: antialiased;
+        body { background-color: #0B0F19; color: #F8FAFC; overflow-x: hidden; }
+        
+        /* Animasi Bawah ke Atas (Reveal) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
         }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(21, 28, 44, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .metric-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0B0F19; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366F1; }
+        
+        /* Glow Effect di balik element */
+        .glow-bg {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(11,15,25,0) 70%);
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+            border-radius: 50%;
         }
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        .btn-filter {
-            transition: all 0.2s;
-        }
-        .btn-filter.active {
-            background-color: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
-        }
+
+        /* Styling Syntax Code */
+        pre { background-color: #05080f !important; border: 1px solid rgba(255,255,255,0.05); }
+        .string { color: #A855F7; }
+        .number { color: #ef4444; }
+        .boolean { color: #3b82f6; }
+        .key { color: #6366F1; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="antialiased selection:bg-primary selection:text-white flex flex-col min-h-screen">
 
-    <div class="max-w-6xl mx-auto space-y-8">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="#" onclick="navigate('home')" class="flex items-center gap-2 group cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl group-hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all">
+                        R
+                    </div>
+                    <span class="font-bold text-xl tracking-wide">Ranzz <span class="text-primary">API</span></span>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center font-medium text-slate-300">
+                    <button onclick="navigate('home')" class="hover:text-white transition-colors">Home</button>
+                    <button onclick="navigate('docs')" class="hover:text-white transition-colors">Dokumentasi</button>
+                    <button onclick="navigate('home', 'pricing')" class="hover:text-white transition-colors">Harga</button>
+                    <button onclick="navigate('home', 'faq')" class="hover:text-white transition-colors">FAQ</button>
+                    <button onclick="navigate('docs')" class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all border border-white/5">
+                        Mulai Sekarang
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-slate-300 text-2xl" id="mobile-menu-btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
         
-        <header class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-bold text-dark tracking-tight">Laporan Analisis Ranzz API</h1>
-                    <p class="text-stone-500 mt-2 max-w-2xl text-sm md:text-base leading-relaxed">
-                        Platform interaktif ini menyajikan sintesis data performa, penggunaan endpoint, dan stabilitas sistem Ranzz API. Jelajahi metrik kuantitatif dan tren kualitatif untuk memahami bagaimana developer memanfaatkan layanan ini.
-                    </p>
-                </div>
-                <div class="flex bg-stone-100 p-1 rounded-lg border border-stone-200">
-                    <button class="btn-filter active px-4 py-2 text-sm font-medium rounded-md text-stone-600 hover:text-dark" data-range="7d">7 Hari</button>
-                    <button class="btn-filter px-4 py-2 text-sm font-medium rounded-md text-stone-600 hover:text-dark" data-range="30d">30 Hari</button>
-                    <button class="btn-filter px-4 py-2 text-sm font-medium rounded-md text-stone-600 hover:text-dark" data-range="1y">1 Tahun</button>
-                </div>
+        <!-- Mobile Dropdown -->
+        <div class="md:hidden hidden absolute w-full glass border-t border-white/10" id="mobile-menu">
+            <div class="px-6 py-4 flex flex-col space-y-4 text-center">
+                <button onclick="navigate('home')" class="text-slate-300 hover:text-white py-2">Home</button>
+                <button onclick="navigate('docs')" class="text-slate-300 hover:text-white py-2">Dokumentasi</button>
+                <button onclick="navigate('home', 'pricing')" class="text-slate-300 hover:text-white py-2">Harga</button>
+                <button onclick="navigate('home', 'faq')" class="text-slate-300 hover:text-white py-2">FAQ</button>
             </div>
-        </header>
+        </div>
+    </nav>
 
-        <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
-            <div class="mb-6">
-                <h2 class="text-xl font-bold text-dark">Ringkasan Eksekutif</h2>
-                <p class="text-stone-500 text-sm mt-1">
-                    Tinjauan tingkat tinggi terhadap indikator kinerja utama (KPI) operasional API. Data ini mencerminkan keandalan infrastruktur dan volume interaksi pengguna dalam periode yang dipilih.
-                </p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="metric-card bg-brandlight rounded-xl p-6 border border-indigo-100">
-                    <div class="text-2xl mb-2">🚀</div>
-                    <h3 class="text-sm font-medium text-indigo-800 uppercase tracking-wider">Total Request</h3>
-                    <p class="text-4xl font-extrabold text-brand mt-1" id="stat-requests">--</p>
-                    <p class="text-xs text-indigo-600 mt-2 font-medium" id="stat-req-trend">--</p>
-                </div>
-                <div class="metric-card bg-emerald-50 rounded-xl p-6 border border-emerald-100">
-                    <div class="text-2xl mb-2">⚡</div>
-                    <h3 class="text-sm font-medium text-emerald-800 uppercase tracking-wider">Rata-rata Latensi</h3>
-                    <p class="text-4xl font-extrabold text-emerald-600 mt-1" id="stat-latency">--</p>
-                    <p class="text-xs text-emerald-600 mt-2 font-medium" id="stat-lat-trend">--</p>
-                </div>
-                <div class="metric-card bg-stone-50 rounded-xl p-6 border border-stone-200">
-                    <div class="text-2xl mb-2">🛡️</div>
-                    <h3 class="text-sm font-medium text-stone-600 uppercase tracking-wider">Uptime Sistem</h3>
-                    <p class="text-4xl font-extrabold text-dark mt-1" id="stat-uptime">--</p>
-                    <p class="text-xs text-stone-500 mt-2 font-medium" id="stat-up-trend">--</p>
-                </div>
-            </div>
-        </section>
+    <!-- KONTEN UTAMA: Berubah sesuai halaman -->
+    <div class="flex-1">
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
-                <div class="mb-6">
-                    <h2 class="text-xl font-bold text-dark">Tren Volume Permintaan</h2>
-                    <p class="text-stone-500 text-sm mt-1">
-                        Visualisasi fluktuasi jumlah panggilan API dari waktu ke waktu. Grafik ini mengidentifikasi pola penggunaan puncak dan membantu dalam perencanaan kapasitas infrastruktur.
+        <!-- ========================================== -->
+        <!-- VIEW: HALAMAN UTAMA (HOME) -->
+        <!-- ========================================== -->
+        <div id="view-home" class="block">
+            <!-- Hero Section -->
+            <section id="home" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+                <div class="glow-bg"></div>
+                <div class="max-w-7xl mx-auto px-6 relative z-10 text-center reveal">
+                    <div class="inline-block mb-4 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium backdrop-blur-sm">
+                        <i class="fa-solid fa-bolt mr-2"></i> Super Cepat & Stabil V2.0
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+                        Elegan API untuk <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Developer Modern</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                        Ranzz API menyediakan endpoint yang kuat, cepat, dan mudah digunakan untuk mengintegrasikan fitur keren ke dalam aplikasi Anda tanpa ribet.
                     </p>
-                </div>
-                <div class="chart-container">
-                    <canvas id="trendChart"></canvas>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <button onclick="navigate('docs')" class="px-8 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] transition-all duration-300 transform hover:-translate-y-1">
+                            Baca Dokumentasi API <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </button>
+                        <button onclick="navigate('home', 'pricing')" class="px-8 py-4 rounded-full glass text-white font-semibold hover:bg-white/10 transition-all duration-300">
+                            Lihat Paket Gratis
+                        </button>
+                    </div>
                 </div>
             </section>
 
-            <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
-                <div class="mb-6">
-                    <h2 class="text-xl font-bold text-dark">Distribusi Kategori</h2>
-                    <p class="text-stone-500 text-sm mt-1">
-                        Analisis proporsional dari kategori endpoint yang paling sering diakses. Wawasan ini memandu prioritas pengembangan fitur dan alokasi sumber daya teknis ke depannya.
-                    </p>
+            <!-- Kategori Preview Section -->
+            <section id="categories" class="py-24 relative bg-dark">
+                <div class="max-w-7xl mx-auto px-6">
+                    <div class="text-center mb-16 reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">Layanan <span class="text-primary">Unggulan Kami</span></h2>
+                        <p class="text-slate-400 max-w-xl mx-auto">Kami menyediakan lebih dari 100+ Endpoint yang terbagi dalam beberapa kategori untuk mendukung proyek Anda.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="glass rounded-2xl p-8 text-center hover:-translate-y-2 transition-all duration-300 reveal group">
+                            <div class="w-16 h-16 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-download"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">Sosmed Downloader</h3>
+                            <p class="text-slate-400 text-sm">Unduh video TikTok, Instagram, YouTube tanpa watermark.</p>
+                        </div>
+                        <div class="glass rounded-2xl p-8 text-center hover:-translate-y-2 transition-all duration-300 reveal group" style="transition-delay: 100ms;">
+                            <div class="w-16 h-16 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-brain"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">Artificial Intelligence</h3>
+                            <p class="text-slate-400 text-sm">Chatbot GPT, pembuat gambar AI, dan analisis teks cerdas.</p>
+                        </div>
+                        <div class="glass rounded-2xl p-8 text-center hover:-translate-y-2 transition-all duration-300 reveal group" style="transition-delay: 200ms;">
+                            <div class="w-16 h-16 mx-auto rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-code"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">Tools & Utilities</h3>
+                            <p class="text-slate-400 text-sm">Pembuat QR Code, pencarian web, lirik lagu, dan mini games.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-12 reveal" style="transition-delay: 300ms;">
+                        <button onclick="navigate('docs')" class="text-primary hover:text-white font-medium transition-colors">
+                            Lihat Semua Endpoint Dokumentasi <i class="fa-solid fa-arrow-right-long ml-2"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="chart-container flex items-center justify-center">
-                    <canvas id="categoryChart"></canvas>
+            </section>
+
+            <!-- Pricing Section (Free) -->
+            <section id="pricing" class="py-24 relative bg-[#0d1221]">
+                <div class="max-w-4xl mx-auto px-6">
+                    <div class="text-center mb-16 reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">Harga <span class="text-primary">Layanan</span></h2>
+                        <p class="text-slate-400">Komitmen kami untuk memberikan akses terbuka bagi para pemula.</p>
+                    </div>
+
+                    <!-- Free Card Highlight -->
+                    <div class="reveal mx-auto w-full md:w-2/3">
+                        <div class="glass rounded-3xl p-1 bg-gradient-to-br from-primary to-secondary relative group">
+                            <div class="absolute -top-4 -right-4 bg-white text-dark font-bold text-xs px-4 py-2 rounded-full shadow-lg transform rotate-12 z-10">
+                                100% GRATIS
+                            </div>
+                            <div class="bg-card rounded-[22px] p-8 md:p-12 text-center h-full relative overflow-hidden">
+                                <i class="fa-solid fa-gift absolute -right-10 -bottom-10 text-9xl text-white/[0.03] z-0"></i>
+                                
+                                <div class="relative z-10">
+                                    <h3 class="text-2xl font-bold text-white mb-2">Paket Developer</h3>
+                                    <div class="flex items-center justify-center gap-1 mb-6">
+                                        <span class="text-5xl font-extrabold text-white">Rp 0</span>
+                                        <span class="text-slate-400">/ selamanya</span>
+                                    </div>
+                                    
+                                    <ul class="text-left space-y-4 mb-10 max-w-xs mx-auto">
+                                        <li class="flex items-center text-slate-300">
+                                            <i class="fa-solid fa-check-circle text-primary mr-3 text-lg"></i> Limit 1000 Request / Hari
+                                        </li>
+                                        <li class="flex items-center text-slate-300">
+                                            <i class="fa-solid fa-check-circle text-primary mr-3 text-lg"></i> Akses Seluruh Fitur (100+)
+                                        </li>
+                                        <li class="flex items-center text-slate-300">
+                                            <i class="fa-solid fa-check-circle text-primary mr-3 text-lg"></i> Server Uptime 99.9%
+                                        </li>
+                                        <li class="flex items-center text-slate-300">
+                                            <i class="fa-solid fa-check-circle text-primary mr-3 text-lg"></i> Komunitas Telegram
+                                        </li>
+                                    </ul>
+
+                                    <button class="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all">
+                                        Daftar Gratis Sekarang
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section id="faq" class="py-24 relative bg-dark">
+                <div class="max-w-3xl mx-auto px-6">
+                    <div class="text-center mb-16 reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">Frequently Asked <span class="text-primary">Questions</span></h2>
+                        <p class="text-slate-400">Punya pertanyaan? Berikut jawaban atas hal yang sering ditanyakan.</p>
+                    </div>
+
+                    <div class="space-y-4 reveal" style="transition-delay: 200ms;">
+                        <!-- FAQ Item 1 -->
+                        <div class="glass rounded-xl overflow-hidden border border-white/5 transition-all">
+                            <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                                <span class="font-semibold text-lg text-white">Apa itu Ranzz API?</span>
+                                <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                            </button>
+                            <div class="max-h-0 overflow-hidden transition-all duration-300 px-6">
+                                <p class="pb-5 text-slate-400 leading-relaxed">
+                                    Ranzz API adalah penyedia layanan REST API yang berfokus pada kecepatan, keandalan, dan kemudahan penggunaan. Dibangun dengan Express.js, melayani berbagai fungsi seperti Downloader, AI, dan Utilitas untuk developer.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 2 -->
+                        <div class="glass rounded-xl overflow-hidden border border-white/5 transition-all">
+                            <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                                <span class="font-semibold text-lg text-white">Apakah layanan ini benar-benar gratis?</span>
+                                <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                            </button>
+                            <div class="max-h-0 overflow-hidden transition-all duration-300 px-6">
+                                <p class="pb-5 text-slate-400 leading-relaxed">
+                                    Tentu saja! Kami memiliki paket "Developer" yang 100% gratis dengan batasan harian yang sangat longgar (1000 request per hari), sangat cukup untuk proyek pribadi, bot, maupun belajar.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 3 -->
+                        <div class="glass rounded-xl overflow-hidden border border-white/5 transition-all">
+                            <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                                <span class="font-semibold text-lg text-white">Bagaimana cara mendapatkan API Key?</span>
+                                <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                            </button>
+                            <div class="max-h-0 overflow-hidden transition-all duration-300 px-6">
+                                <p class="pb-5 text-slate-400 leading-relaxed">
+                                    Anda cukup mendaftar atau login melalui Dashboard kami. Setelah login, Anda akan otomatis mendapatkan satu API Key gratis yang bisa digunakan ke semua endpoint dokumentasi.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
 
-        <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
-            <div class="mb-6">
-                <h2 class="text-xl font-bold text-dark">Kesimpulan & Wawasan Kualitatif</h2>
-                <p class="text-stone-500 text-sm mt-1">
-                    Sintesis tekstual berdasarkan data interaktif di atas, memberikan konteks tambahan terkait perilaku pengguna dan rekomendasi tindakan.
-                </p>
+
+        <!-- ========================================== -->
+        <!-- VIEW: HALAMAN DOKUMENTASI (DOCS) -->
+        <!-- ========================================== -->
+        <div id="view-docs" class="hidden pt-32 pb-24 bg-[#0B0F19]">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row gap-10">
+                
+                <!-- Sidebar Dokumentasi -->
+                <aside class="w-full md:w-72 shrink-0 reveal">
+                    <div class="sticky top-28 glass p-6 rounded-2xl border-l-4 border-l-primary">
+                        <h3 class="font-bold text-white text-xl mb-6">Menu Dokumentasi</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Persiapan</h4>
+                                <ul class="space-y-2 text-sm text-slate-400">
+                                    <li><a href="#doc-intro" class="hover:text-primary transition-colors block py-1">Pengenalan API</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Kategori Endpoint</h4>
+                                <div class="space-y-2">
+                                    <!-- Menu Downloader -->
+                                    <div>
+                                        <button onclick="toggleSidebarMenu('menu-dl')" class="w-full flex items-center justify-between text-slate-300 hover:text-white font-medium text-sm py-2 transition-colors">
+                                            <div class="flex items-center gap-3"><i class="fa-solid fa-download w-4 text-center"></i> Downloader</div>
+                                            <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" id="icon-menu-dl"></i>
+                                        </button>
+                                        <ul id="menu-dl" class="max-h-0 overflow-hidden transition-all duration-300 pl-7 space-y-1 text-sm text-slate-400">
+                                            <li class="pt-2"><a href="#doc-tiktok" class="hover:text-primary transition-colors block py-1">TikTok Downloader</a></li>
+                                            <li><a href="#doc-spotify" class="hover:text-primary transition-colors block py-1 flex items-center justify-between"><span>Spotify Downloader</span> <span class="bg-green-500/20 text-green-400 text-[10px] px-2 py-0.5 rounded">Baru</span></a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Menu AI -->
+                                    <div>
+                                        <button onclick="toggleSidebarMenu('menu-ai')" class="w-full flex items-center justify-between text-slate-300 hover:text-white font-medium text-sm py-2 transition-colors">
+                                            <div class="flex items-center gap-3"><i class="fa-solid fa-brain w-4 text-center"></i> AI / Bot</div>
+                                            <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" id="icon-menu-ai"></i>
+                                        </button>
+                                        <ul id="menu-ai" class="max-h-0 overflow-hidden transition-all duration-300 pl-7 space-y-1 text-sm text-slate-400">
+                                            <li class="pt-2"><a href="#doc-ai" class="hover:text-primary transition-colors block py-1">Ranzz ChatBot AI</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Menu Search -->
+                                    <div>
+                                        <button onclick="toggleSidebarMenu('menu-search')" class="w-full flex items-center justify-between text-slate-300 hover:text-white font-medium text-sm py-2 transition-colors">
+                                            <div class="flex items-center gap-3"><i class="fa-solid fa-magnifying-glass w-4 text-center"></i> Search</div>
+                                            <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" id="icon-menu-search"></i>
+                                        </button>
+                                        <ul id="menu-search" class="max-h-0 overflow-hidden transition-all duration-300 pl-7 space-y-1 text-sm text-slate-400">
+                                            <li class="pt-2"><a href="#doc-tools" class="hover:text-primary transition-colors block py-1">Pinterest Search</a></li>
+                                            <li><a href="#doc-tools" class="hover:text-primary transition-colors block py-1">Google Search</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Menu Tools -->
+                                    <div>
+                                        <button onclick="toggleSidebarMenu('menu-tools')" class="w-full flex items-center justify-between text-slate-300 hover:text-white font-medium text-sm py-2 transition-colors">
+                                            <div class="flex items-center gap-3"><i class="fa-solid fa-wrench w-4 text-center"></i> Tools & Utility</div>
+                                            <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" id="icon-menu-tools"></i>
+                                        </button>
+                                        <ul id="menu-tools" class="max-h-0 overflow-hidden transition-all duration-300 pl-7 space-y-1 text-sm text-slate-400">
+                                            <li class="pt-2"><a href="#doc-tools" class="hover:text-primary transition-colors block py-1">QR Code Generator</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Konten Dokumentasi API -->
+                <main class="flex-1 space-y-16">
+                    
+                    <!-- Section: Pengenalan -->
+                    <section id="doc-intro" class="reveal">
+                        <h1 class="text-4xl font-bold text-white mb-4">Pengenalan</h1>
+                        <p class="text-slate-400 leading-relaxed mb-6">
+                            Selamat datang di dokumentasi resmi Ranzz API. Base URL untuk semua request API adalah:
+                        </p>
+                        <div class="bg-card border border-white/10 p-4 rounded-xl flex items-center justify-between mb-8">
+                            <code class="text-primary font-mono text-lg">https://api.ranzz-api.com</code>
+                            <button class="text-slate-500 hover:text-white transition-colors" title="Salin URL"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </section>
+
+                    <!-- Section: TikTok Downloader -->
+                    <section id="doc-tiktok" class="reveal pt-8 border-t border-white/5">
+                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5">
+                            <h3 class="text-2xl font-bold text-white mb-3 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-white text-lg">
+                                    <i class="fa-brands fa-tiktok"></i>
+                                </div>
+                                TikTok Downloader
+                            </h3>
+                            <p class="text-slate-400 mb-6 text-sm">Mengunduh video dari TikTok tanpa watermark menggunakan URL video.</p>
+                            
+                            <div class="flex flex-wrap items-center gap-3 mb-6 bg-black/30 p-4 rounded-xl">
+                                <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded font-bold text-sm">GET</span>
+                                <code class="text-slate-300 break-all">/api/downloader/tiktok?url={url_video}</code>
+                            </div>
+
+                            <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Query Parameter</h4>
+                            <div class="overflow-x-auto mb-8">
+                                <table class="w-full text-left text-sm text-slate-400">
+                                    <thead class="bg-white/5 text-slate-300">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-tl-lg rounded-bl-lg">Parameter</th>
+                                            <th class="px-4 py-3">Tipe</th>
+                                            <th class="px-4 py-3">Wajib</th>
+                                            <th class="px-4 py-3 rounded-tr-lg rounded-br-lg">Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b border-white/5">
+                                            <td class="px-4 py-3 font-mono text-primary">url</td>
+                                            <td class="px-4 py-3">String</td>
+                                            <td class="px-4 py-3 text-green-400">Ya</td>
+                                            <td class="px-4 py-3">URL video TikTok yang valid.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Uji Coba Langsung TikTok -->
+                            <div class="mt-8 bg-black/40 border border-white/10 rounded-xl p-5">
+                                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-bolt text-yellow-400"></i> Uji Coba Langsung (Execute)
+                                </h4>
+                                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                                    <input type="text" id="input-tiktok-url" placeholder="Masukkan URL TikTok..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-primary placeholder-slate-600">
+                                    <button onclick="executeApi('GET', '/api/downloader/tiktok', {url: document.getElementById('input-tiktok-url').value}, 'res-tiktok')" class="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2">
+                                        Execute <i class="fa-solid fa-play"></i>
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <pre id="res-tiktok" class="p-5 rounded-xl text-sm overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[100px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section: Spotify Downloader -->
+                    <section id="doc-spotify" class="reveal pt-8 border-t border-white/5">
+                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5">
+                            <h3 class="text-2xl font-bold text-white mb-3 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-green-500 text-lg">
+                                    <i class="fa-brands fa-spotify"></i>
+                                </div>
+                                Spotify Downloader
+                            </h3>
+                            <p class="text-slate-400 mb-6 text-sm">Mengunduh lagu atau album dari Spotify dalam format MP3 (Kualitas Tinggi) menggunakan URL Track/Album Spotify.</p>
+                            
+                            <div class="flex flex-wrap items-center gap-3 mb-6 bg-black/30 p-4 rounded-xl">
+                                <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded font-bold text-sm">GET</span>
+                                <code class="text-slate-300 break-all">/api/downloader/spotify?url={url_spotify}</code>
+                            </div>
+
+                            <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Query Parameter</h4>
+                            <div class="overflow-x-auto mb-8">
+                                <table class="w-full text-left text-sm text-slate-400">
+                                    <thead class="bg-white/5 text-slate-300">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-tl-lg rounded-bl-lg">Parameter</th>
+                                            <th class="px-4 py-3">Tipe</th>
+                                            <th class="px-4 py-3">Wajib</th>
+                                            <th class="px-4 py-3 rounded-tr-lg rounded-br-lg">Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b border-white/5">
+                                            <td class="px-4 py-3 font-mono text-primary">url</td>
+                                            <td class="px-4 py-3">String</td>
+                                            <td class="px-4 py-3 text-green-400">Ya</td>
+                                            <td class="px-4 py-3">URL Track / Album Spotify valid.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Uji Coba Langsung Spotify -->
+                            <div class="mt-8 bg-black/40 border border-white/10 rounded-xl p-5">
+                                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-bolt text-yellow-400"></i> Uji Coba Langsung (Execute)
+                                </h4>
+                                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                                    <input type="text" id="input-spotify-url" placeholder="Masukkan URL Track/Album Spotify..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-green-500 placeholder-slate-600">
+                                    <button onclick="executeApi('GET', '/api/downloader/spotify', {url: document.getElementById('input-spotify-url').value}, 'res-spotify')" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(34,197,94,0.3)] flex items-center justify-center gap-2">
+                                        Execute <i class="fa-solid fa-play"></i>
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <pre id="res-spotify" class="p-5 rounded-xl text-sm overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[100px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section: AI -->
+                    <section id="doc-ai" class="reveal pt-8 border-t border-white/5">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
+                                <i class="fa-solid fa-brain"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white">Artificial Intelligence</h2>
+                        </div>
+                        
+                        <!-- Endpoint: Chat AI -->
+                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5">
+                            <h3 class="text-2xl font-bold text-white mb-3">Ranzz ChatBot AI</h3>
+                            <p class="text-slate-400 mb-6 text-sm">Mengobrol dengan AI canggih untuk mendapatkan jawaban atas pertanyaan apa pun.</p>
+                            
+                            <div class="flex flex-wrap items-center gap-3 mb-6 bg-black/30 p-4 rounded-xl">
+                                <span class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded font-bold text-sm">POST</span>
+                                <code class="text-slate-300 break-all">/api/ai/chat</code>
+                            </div>
+
+                            <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Body Request (JSON)</h4>
+                            <div class="overflow-x-auto mb-8">
+                                <table class="w-full text-left text-sm text-slate-400">
+                                    <thead class="bg-white/5 text-slate-300">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-tl-lg rounded-bl-lg">Key</th>
+                                            <th class="px-4 py-3">Tipe</th>
+                                            <th class="px-4 py-3">Wajib</th>
+                                            <th class="px-4 py-3 rounded-tr-lg rounded-br-lg">Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b border-white/5">
+                                            <td class="px-4 py-3 font-mono text-primary">message</td>
+                                            <td class="px-4 py-3">String</td>
+                                            <td class="px-4 py-3 text-green-400">Ya</td>
+                                            <td class="px-4 py-3">Pesan teks yang ingin dikirimkan ke AI.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Uji Coba Langsung AI -->
+                            <div class="mt-8 bg-black/40 border border-white/10 rounded-xl p-5">
+                                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-bolt text-yellow-400"></i> Uji Coba Langsung (Execute)
+                                </h4>
+                                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                                    <input type="text" id="input-ai-msg" placeholder="Ketik pesan Anda untuk AI..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 placeholder-slate-600">
+                                    <button onclick="executeApi('POST', '/api/ai/chat', {message: document.getElementById('input-ai-msg').value}, 'res-ai')" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center gap-2">
+                                        Execute <i class="fa-solid fa-play"></i>
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <pre id="res-ai" class="p-5 rounded-xl text-sm overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[100px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section: Tools & Search (Placeholder) -->
+                    <section id="doc-tools" class="reveal pt-8 border-t border-white/5">
+                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5 text-center py-12">
+                            <i class="fa-solid fa-person-digging text-5xl text-slate-500 mb-4"></i>
+                            <h3 class="text-2xl font-bold text-white mb-2">Tools & Search API</h3>
+                            <p class="text-slate-400 text-sm max-w-md mx-auto">Dokumentasi untuk kategori ini sedang dalam tahap penulisan dan akan tersedia pada pembaruan mendatang.</p>
+                        </div>
+                    </section>
+
+                </main>
             </div>
-            <div class="bg-stone-50 rounded-xl p-6 border border-stone-100 text-sm md:text-base leading-relaxed text-stone-700" id="insight-text">
-                --
-            </div>
-        </section>
+        </div>
 
     </div>
+    <!-- END KONTEN UTAMA -->
 
+
+    <!-- Footer (Selalu Muncul di Bawah) -->
+    <footer id="contact" class="bg-[#05080f] pt-16 pb-8 border-t border-white/5 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            <!-- About -->
+            <div class="reveal">
+                <a href="#" onclick="navigate('home')" class="flex items-center gap-2 mb-6">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">R</div>
+                    <span class="font-bold text-xl text-white">Ranzz API</span>
+                </a>
+                <p class="text-slate-400 leading-relaxed text-sm">
+                    Infrastruktur modern, dibangun dengan teknologi Express.js untuk memastikan performa maksimal dalam setiap request. Solusi cerdas untuk developer cerdas.
+                </p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="reveal" style="transition-delay: 100ms;">
+                <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Quick Links</h4>
+                <ul class="space-y-3">
+                    <li><button onclick="navigate('home')" class="text-slate-400 hover:text-primary transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-angle-right text-xs"></i> Beranda Utama</button></li>
+                    <li><button onclick="navigate('docs')" class="text-slate-400 hover:text-primary transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-angle-right text-xs"></i> Fitur & Dokumentasi</button></li>
+                    <li><button onclick="navigate('home', 'pricing')" class="text-slate-400 hover:text-primary transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-angle-right text-xs"></i> Harga Layanan</button></li>
+                </ul>
+            </div>
+
+            <!-- Kontak -->
+            <div class="reveal" style="transition-delay: 200ms;">
+                <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Kontak Kami</h4>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3 text-slate-400 text-sm">
+                        <i class="fa-solid fa-envelope mt-1 text-primary"></i>
+                        <span>support@ranzz-api.com</span>
+                    </li>
+                    <li class="flex gap-4 mt-6">
+                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center text-white hover:bg-primary transition-colors"><i class="fa-brands fa-github"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center text-white hover:bg-[#0088cc] transition-colors"><i class="fa-brands fa-telegram"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 text-center flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 reveal">
+            <p>&copy; 2026 Ranzz API. Dibuat dengan cinta menggunakan Express.js & Tailwind CSS.</p>
+            <p class="mt-2 md:mt-0">Status Server: <span class="text-green-400 font-bold ml-1"><i class="fa-solid fa-circle text-[8px] align-middle -mt-1 mr-1"></i>Online</span></p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Interaksi Halaman & SPA Routing -->
     <script>
-        const appData = {
-            '7d': {
-                requests: '142.5K',
-                reqTrend: '↑ 12% dari minggu lalu',
-                latency: '48ms',
-                latTrend: 'Stabil',
-                uptime: '99.98%',
-                upTrend: 'Tidak ada insiden',
-                trendLabels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
-                trendData: [18000, 22000, 19500, 24000, 28000, 15000, 16000],
-                catLabels: ['Downloader', 'AI / Bot', 'Search', 'Tools'],
-                catData: [45, 30, 15, 10],
-                insight: 'Dalam 7 hari terakhir, kategori Downloader (terutama Spotify dan TikTok) mendominasi beban kerja sistem sebesar 45%. Lonjakan trafik konsisten terjadi pada hari Kamis dan Jumat. Latensi tetap stabil di bawah 50ms, mengindikasikan infrastruktur saat ini menangani beban harian dengan sangat efisien.'
-            },
-            '30d': {
-                requests: '680.2K',
-                reqTrend: '↑ 8% dari bulan lalu',
-                latency: '52ms',
-                latTrend: '↑ 4ms lambat',
-                uptime: '99.95%',
-                upTrend: '1 insiden minor',
-                trendLabels: ['Mgg 1', 'Mgg 2', 'Mgg 3', 'Mgg 4'],
-                trendData: [150000, 165000, 180000, 185200],
-                catLabels: ['Downloader', 'AI / Bot', 'Search', 'Tools'],
-                catData: [40, 35, 12, 13],
-                insight: 'Tren 30 hari menunjukkan pertumbuhan stabil pada penggunaan fitur AI/Bot yang kini mencapai 35% dari total permintaan, mendekati kategori Downloader. Sempat terjadi satu insiden minor pada minggu kedua yang meningkatkan rata-rata latensi sebesar 4ms, namun sistem mitigasi berhasil mencegah downtime berkepanjangan.'
-            },
-            '1y': {
-                requests: '8.4M',
-                reqTrend: '↑ 120% Tahun ke Tahun',
-                latency: '65ms',
-                latTrend: '↑ Perlu optimasi',
-                uptime: '99.85%',
-                upTrend: 'Sesuai SLA',
-                trendLabels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                trendData: [1200000, 1800000, 2400000, 3000000],
-                catLabels: ['Downloader', 'AI / Bot', 'Search', 'Tools'],
-                catData: [35, 45, 10, 10],
-                insight: 'Secara tahunan, terjadi pergeseran paradigma penggunaan. Fitur AI/Bot telah mengambil alih posisi pertama (45%) dari Downloader, didorong oleh tren integrasi chatbot cerdas. Pertumbuhan drastis 120% YoY berdampak pada rata-rata latensi tahunan (65ms). Direkomendasikan untuk melakukan perluasan server dan optimasi database pada kuartal mendatang.'
+        // --- Sistem Navigasi SPA (Single Page Application) ---
+        function navigate(page, sectionId = null) {
+            const homeView = document.getElementById('view-home');
+            const docsView = document.getElementById('view-docs');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileBtnIcon = document.querySelector('#mobile-menu-btn i');
+
+            // Tutup mobile menu jika terbuka
+            mobileMenu.classList.add('hidden');
+            mobileBtnIcon.classList.remove('fa-xmark');
+            mobileBtnIcon.classList.add('fa-bars');
+
+            // Sembunyikan semua view
+            homeView.classList.add('hidden');
+            homeView.classList.remove('block');
+            docsView.classList.add('hidden');
+            docsView.classList.remove('block');
+
+            // Logika Routing (Switch Case)
+            switch(page) {
+                case 'home':
+                    homeView.classList.remove('hidden');
+                    homeView.classList.add('block');
+                    if (sectionId) {
+                        setTimeout(() => {
+                            const el = document.getElementById(sectionId);
+                            if(el) {
+                                const yOffset = -80; // Sesuaikan tinggi navbar
+                                const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                window.scrollTo({top: y, behavior: 'smooth'});
+                            }
+                        }, 100);
+                    } else {
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    }
+                    break;
+                case 'docs':
+                    docsView.classList.remove('hidden');
+                    docsView.classList.add('block');
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                    break;
             }
+
+            // Pemicu ulang animasi saat ganti halaman
+            setTimeout(() => {
+                document.querySelectorAll('.reveal').forEach(el => {
+                    el.classList.remove('active'); // Reset class
+                    revealOnScroll.observe(el);    // Observasi ulang
+                });
+                
+                // Cek manual jika elemen sudah ada di layar (tanpa scroll)
+                document.querySelectorAll('.reveal').forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    if(rect.top < window.innerHeight) {
+                        el.classList.add('active');
+                    }
+                });
+            }, 50);
+        }
+
+        // --- Animasi Scroll Bawah ke Atas (Intersection Observer) ---
+        const revealOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
         };
 
-        let trendChartInstance = null;
-        let categoryChartInstance = null;
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target); 
+                }
+            });
+        }, revealOptions);
 
-        function updateUI(range) {
-            const data = appData[range];
+        // Inisialisasi awal animasi
+        document.querySelectorAll('.reveal').forEach(el => revealOnScroll.observe(el));
+
+        // --- Logic Sidebar Menu Accordion ---
+        function toggleSidebarMenu(id) {
+            const menu = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
             
-            document.getElementById('stat-requests').innerText = data.requests;
-            document.getElementById('stat-req-trend').innerText = data.reqTrend;
-            document.getElementById('stat-latency').innerText = data.latency;
-            document.getElementById('stat-lat-trend').innerText = data.latTrend;
-            document.getElementById('stat-uptime').innerText = data.uptime;
-            document.getElementById('stat-up-trend').innerText = data.upTrend;
-            document.getElementById('insight-text').innerText = data.insight;
-
-            document.querySelectorAll('.btn-filter').forEach(btn => {
-                if (btn.dataset.range === range) {
-                    btn.classList.add('active');
-                    btn.classList.remove('bg-transparent');
-                } else {
-                    btn.classList.remove('active');
-                    btn.classList.add('bg-transparent');
+            // Tutup menu lain yang sedang terbuka
+            document.querySelectorAll('ul[id^="menu-"]').forEach(el => {
+                if (el !== menu && el.style.maxHeight) {
+                    el.style.maxHeight = null;
+                    document.getElementById('icon-' + el.id).style.transform = 'rotate(0deg)';
                 }
             });
 
-            renderTrendChart(data.trendLabels, data.trendData);
-            renderCategoryChart(data.catLabels, data.catData);
+            if (menu.style.maxHeight) {
+                menu.style.maxHeight = null;
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                menu.style.maxHeight = menu.scrollHeight + "px";
+                icon.style.transform = 'rotate(180deg)';
+            }
         }
 
-        function renderTrendChart(labels, dataPoints) {
-            const ctx = document.getElementById('trendChart').getContext('2d');
+        // --- Logic FAQ Accordion ---
+        function toggleFaq(button) {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('i');
             
-            if (trendChartInstance) {
-                trendChartInstance.destroy();
+            document.querySelectorAll('#faq .max-h-0').forEach(el => {
+                if (el !== content && el.style.maxHeight) {
+                    el.style.maxHeight = null;
+                    el.previousElementSibling.querySelector('i').style.transform = 'rotate(0deg)';
+                }
+            });
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // --- Logic Navbar Background (Blur on Scroll) ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-lg', 'bg-[#0B0F19]/90');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('shadow-lg', 'bg-[#0B0F19]/90');
+            }
+        });
+
+        // --- Mobile Menu Toggle ---
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const icon = mobileBtn.querySelector('i');
+            if(mobileMenu.classList.contains('hidden')){
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            } else {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            }
+        });
+
+        // --- Execute API Function (Live Test) ---
+        async function executeApi(method, endpoint, data, resultId) {
+            const resultEl = document.getElementById(resultId);
+            
+            // Validasi Input Kosong
+            const values = Object.values(data);
+            if(values.some(v => !v || v.trim() === '')) {
+                resultEl.innerHTML = `<code class="text-red-400">Error: Parameter input tidak boleh kosong!</code>`;
+                return;
             }
 
-            trendChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Volume Request',
-                        data: dataPoints,
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#4f46e5',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1c1917',
-                            padding: 12,
-                            titleFont: { family: 'system-ui', size: 13 },
-                            bodyFont: { family: 'system-ui', size: 14, weight: 'bold' },
-                            displayColors: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#f5f5f4', drawBorder: false },
-                            ticks: { font: { family: 'system-ui' }, color: '#78716c' }
-                        },
-                        x: {
-                            grid: { display: false, drawBorder: false },
-                            ticks: {
-                                font: { family:
+            resultEl.innerHTML = `<code class="text-yellow-400 flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin"></i> Memproses Request...</code>`;
+            
+            try {
+                let url = endpoint;
+                let options = { method: method };
+
+                if (method === 'GET') {
+                    const params = new URLSearchParams(data).toString();
+                    if (params) url += '?' + params;
+                } else if (method === 'POST') {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    options.body = JSON.stringify(data);
+                }
+
+                // Melakukan Fetch ke API Backend
+                const response = await fetch(url, options);
+                const json = await response.json();
+                
+                // Format JSON dan beri warna sintaks
+                const formatted = JSON.stringify(json, null, 2)
+                    .replace(/"(.*?)":/g, '<span class="key">"$1"</span>:')
+                    .replace(/\b(true|false)\b/g, '<span class="boolean">$&</span>')
+                    .replace(/"(.*?)"(?!\s*:)/g, '<span class="string">"$1"</span>')
+                    .replace(/\b(\d+)\b/g, '<span class="number">$&</span>');
+                
+                resultEl.innerHTML = `<code>${formatted}</code>`;
+            } catch (error) {
+                // Tampilkan error jika API Vercel tidak bisa diakses
+                resultEl.innerHTML = `<code class="text-red-400">Error Gagal Menghubungi API:\n${error.message}\n(Apakah backend /api sudah berjalan di server?)</code>`;
+            }
+        }
+    </script>
+</body>
+</html>
