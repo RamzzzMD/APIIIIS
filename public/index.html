@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranzz API - Laporan Analisis Interaktif</title>
+    
+    <!-- Chosen Palette: Warm Neutrals (Stone/Zinc) with Indigo & Emerald Accents -->
+    <!-- Application Structure Plan: Dashboard structure chosen to synthesize API performance metrics. Top section provides immediate context via dynamic KPI cards. Middle section splits into two visual panes (Trend & Distribution) for rapid comparison. A time-range filter acts as the primary interactive driver, dynamically updating all views to facilitate temporal exploration without page reloads. -->
+    <!-- Visualization & Content Choices: Traffic Trend -> Goal: Change over time -> Line Chart -> Allows temporal comparison -> Chart.js. Category Distribution -> Goal: Proportions -> Doughnut Chart -> Shows clear segment weight -> Chart.js. KPI Cards -> Goal: Inform -> Dynamic Text -> Immediate high-level understanding -> Vanilla JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#4f46e5',
+                        brandlight: '#e0e7ff',
+                        dark: '#1c1917',
+                        paper: '#fafaf9'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fafaf9;
+            color: #1c1917;
+            -webkit-font-smoothing: antialiased;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .metric-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .btn-filter {
+            transition: all 0.2s;
+        }
+        .btn-filter.active {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <header class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-dark tracking-tight">Laporan Analisis Ranzz API</h1>
+                    <p class="text-stone-500 mt-2 max-w-2xl text-sm md:text-base leading-relaxed">
+                        Platform interaktif ini menyajikan sintesis data performa, penggunaan endpoint, dan stabilitas sistem Ranzz API. Jelajahi metrik kuantitatif dan tren kualitatif untuk memahami bagaimana developer memanfaatkan layanan ini.
+                    </p>
+                </div>
+                <div class="flex bg-stone-100 p-1 rounded-lg border border-stone-200">
+                    <button class="btn-filter active px-4 py-2 text-sm font-medium rounded-md text-stone-600 hover:text-dark" data-range="7d">7 Hari</button>
+                    <button class="btn-filter px-4 py-2 text-sm font-medium rounded-md text-stone-600 hover:text-dark" data-range="30d">30 Hari</button>
+                    <button class="btn-filter px-4 py-2 text-sm font-medium rounded-md text-stone-600 hover:text-dark" data-range="1y">1 Tahun</button>
+                </div>
+            </div>
+        </header>
+
+        <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-dark">Ringkasan Eksekutif</h2>
+                <p class="text-stone-500 text-sm mt-1">
+                    Tinjauan tingkat tinggi terhadap indikator kinerja utama (KPI) operasional API. Data ini mencerminkan keandalan infrastruktur dan volume interaksi pengguna dalam periode yang dipilih.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="metric-card bg-brandlight rounded-xl p-6 border border-indigo-100">
+                    <div class="text-2xl mb-2">🚀</div>
+                    <h3 class="text-sm font-medium text-indigo-800 uppercase tracking-wider">Total Request</h3>
+                    <p class="text-4xl font-extrabold text-brand mt-1" id="stat-requests">--</p>
+                    <p class="text-xs text-indigo-600 mt-2 font-medium" id="stat-req-trend">--</p>
+                </div>
+                <div class="metric-card bg-emerald-50 rounded-xl p-6 border border-emerald-100">
+                    <div class="text-2xl mb-2">⚡</div>
+                    <h3 class="text-sm font-medium text-emerald-800 uppercase tracking-wider">Rata-rata Latensi</h3>
+                    <p class="text-4xl font-extrabold text-emerald-600 mt-1" id="stat-latency">--</p>
+                    <p class="text-xs text-emerald-600 mt-2 font-medium" id="stat-lat-trend">--</p>
+                </div>
+                <div class="metric-card bg-stone-50 rounded-xl p-6 border border-stone-200">
+                    <div class="text-2xl mb-2">🛡️</div>
+                    <h3 class="text-sm font-medium text-stone-600 uppercase tracking-wider">Uptime Sistem</h3>
+                    <p class="text-4xl font-extrabold text-dark mt-1" id="stat-uptime">--</p>
+                    <p class="text-xs text-stone-500 mt-2 font-medium" id="stat-up-trend">--</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-dark">Tren Volume Permintaan</h2>
+                    <p class="text-stone-500 text-sm mt-1">
+                        Visualisasi fluktuasi jumlah panggilan API dari waktu ke waktu. Grafik ini mengidentifikasi pola penggunaan puncak dan membantu dalam perencanaan kapasitas infrastruktur.
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-dark">Distribusi Kategori</h2>
+                    <p class="text-stone-500 text-sm mt-1">
+                        Analisis proporsional dari kategori endpoint yang paling sering diakses. Wawasan ini memandu prioritas pengembangan fitur dan alokasi sumber daya teknis ke depannya.
+                    </p>
+                </div>
+                <div class="chart-container flex items-center justify-center">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-dark">Kesimpulan & Wawasan Kualitatif</h2>
+                <p class="text-stone-500 text-sm mt-1">
+                    Sintesis tekstual berdasarkan data interaktif di atas, memberikan konteks tambahan terkait perilaku pengguna dan rekomendasi tindakan.
+                </p>
+            </div>
+            <div class="bg-stone-50 rounded-xl p-6 border border-stone-100 text-sm md:text-base leading-relaxed text-stone-700" id="insight-text">
+                --
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const appData = {
+            '7d': {
+                requests: '142.5K',
+                reqTrend: '↑ 12% dari minggu lalu',
+                latency: '48ms',
+                latTrend: 'Stabil',
+                uptime: '99.98%',
+                upTrend: 'Tidak ada insiden',
+                trendLabels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                trendData: [18000, 22000, 19500, 24000, 28000, 15000, 16000],
+                catLabels: ['Downloader', 'AI / Bot', 'Search', 'Tools'],
+                catData: [45, 30, 15, 10],
+                insight: 'Dalam 7 hari terakhir, kategori Downloader (terutama Spotify dan TikTok) mendominasi beban kerja sistem sebesar 45%. Lonjakan trafik konsisten terjadi pada hari Kamis dan Jumat. Latensi tetap stabil di bawah 50ms, mengindikasikan infrastruktur saat ini menangani beban harian dengan sangat efisien.'
+            },
+            '30d': {
+                requests: '680.2K',
+                reqTrend: '↑ 8% dari bulan lalu',
+                latency: '52ms',
+                latTrend: '↑ 4ms lambat',
+                uptime: '99.95%',
+                upTrend: '1 insiden minor',
+                trendLabels: ['Mgg 1', 'Mgg 2', 'Mgg 3', 'Mgg 4'],
+                trendData: [150000, 165000, 180000, 185200],
+                catLabels: ['Downloader', 'AI / Bot', 'Search', 'Tools'],
+                catData: [40, 35, 12, 13],
+                insight: 'Tren 30 hari menunjukkan pertumbuhan stabil pada penggunaan fitur AI/Bot yang kini mencapai 35% dari total permintaan, mendekati kategori Downloader. Sempat terjadi satu insiden minor pada minggu kedua yang meningkatkan rata-rata latensi sebesar 4ms, namun sistem mitigasi berhasil mencegah downtime berkepanjangan.'
+            },
+            '1y': {
+                requests: '8.4M',
+                reqTrend: '↑ 120% Tahun ke Tahun',
+                latency: '65ms',
+                latTrend: '↑ Perlu optimasi',
+                uptime: '99.85%',
+                upTrend: 'Sesuai SLA',
+                trendLabels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                trendData: [1200000, 1800000, 2400000, 3000000],
+                catLabels: ['Downloader', 'AI / Bot', 'Search', 'Tools'],
+                catData: [35, 45, 10, 10],
+                insight: 'Secara tahunan, terjadi pergeseran paradigma penggunaan. Fitur AI/Bot telah mengambil alih posisi pertama (45%) dari Downloader, didorong oleh tren integrasi chatbot cerdas. Pertumbuhan drastis 120% YoY berdampak pada rata-rata latensi tahunan (65ms). Direkomendasikan untuk melakukan perluasan server dan optimasi database pada kuartal mendatang.'
+            }
+        };
+
+        let trendChartInstance = null;
+        let categoryChartInstance = null;
+
+        function updateUI(range) {
+            const data = appData[range];
+            
+            document.getElementById('stat-requests').innerText = data.requests;
+            document.getElementById('stat-req-trend').innerText = data.reqTrend;
+            document.getElementById('stat-latency').innerText = data.latency;
+            document.getElementById('stat-lat-trend').innerText = data.latTrend;
+            document.getElementById('stat-uptime').innerText = data.uptime;
+            document.getElementById('stat-up-trend').innerText = data.upTrend;
+            document.getElementById('insight-text').innerText = data.insight;
+
+            document.querySelectorAll('.btn-filter').forEach(btn => {
+                if (btn.dataset.range === range) {
+                    btn.classList.add('active');
+                    btn.classList.remove('bg-transparent');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('bg-transparent');
+                }
+            });
+
+            renderTrendChart(data.trendLabels, data.trendData);
+            renderCategoryChart(data.catLabels, data.catData);
+        }
+
+        function renderTrendChart(labels, dataPoints) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChartInstance) {
+                trendChartInstance.destroy();
+            }
+
+            trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Volume Request',
+                        data: dataPoints,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#4f46e5',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1c1917',
+                            padding: 12,
+                            titleFont: { family: 'system-ui', size: 13 },
+                            bodyFont: { family: 'system-ui', size: 14, weight: 'bold' },
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f5f5f4', drawBorder: false },
+                            ticks: { font: { family: 'system-ui' }, color: '#78716c' }
+                        },
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: {
+                                font: { family:
