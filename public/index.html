@@ -298,14 +298,14 @@
         <!-- ========================================== -->
         <!-- VIEW: HALAMAN DOKUMENTASI (DOCS) -->
         <!-- ========================================== -->
-        <div id="view-docs" class="hidden pt-32 pb-24 bg-[#0B0F19]">
-            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row gap-10">
+        <div id="view-docs" class="hidden pt-28 pb-12 bg-[#0B0F19] min-h-screen">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row gap-8">
                 
                 <!-- Sidebar Dokumentasi -->
-                <aside class="w-full md:w-72 shrink-0 reveal">
-                    <div class="sticky top-28 glass p-6 rounded-2xl border-l-4 border-l-primary">
-                        <h3 class="font-bold text-white text-xl mb-6">Menu Dokumentasi</h3>
-                        <div class="space-y-6">
+                <aside class="w-full md:w-64 shrink-0 reveal">
+                    <div class="sticky top-24 glass p-5 rounded-2xl border-l-4 border-l-primary h-[calc(100vh-7rem)] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full">
+                        <h3 class="font-bold text-white text-lg mb-5">Menu Dokumentasi</h3>
+                        <div class="space-y-5">
                             <div>
                                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Persiapan</h4>
                                 <ul class="space-y-2 text-sm text-slate-400">
@@ -367,196 +367,205 @@
                 </aside>
 
                 <!-- Konten Dokumentasi API -->
-                <main class="flex-1 space-y-16">
+                <main class="flex-1 space-y-10 w-full overflow-hidden">
                     
                     <!-- Section: Pengenalan -->
                     <section id="doc-intro" class="reveal">
-                        <h1 class="text-4xl font-bold text-white mb-4">Pengenalan</h1>
-                        <p class="text-slate-400 leading-relaxed mb-6">
+                        <h1 class="text-3xl font-bold text-white mb-3">Pengenalan</h1>
+                        <p class="text-slate-400 leading-relaxed mb-4 text-sm md:text-base">
                             Selamat datang di dokumentasi resmi Ranzz API. Base URL untuk semua request API adalah:
                         </p>
-                        <div class="bg-card border border-white/10 p-4 rounded-xl flex items-center justify-between mb-8">
-                            <code class="text-primary font-mono text-lg">https://api.ranzz-api.com</code>
+                        <div class="bg-card border border-white/10 p-4 rounded-xl flex items-center justify-between mb-4">
+                            <code class="text-primary font-mono text-base">https://api.ranzz-api.com</code>
                             <button class="text-slate-500 hover:text-white transition-colors" title="Salin URL"><i class="fa-regular fa-copy"></i></button>
                         </div>
                     </section>
 
                     <!-- Section: TikTok Downloader -->
-                    <section id="doc-tiktok" class="reveal pt-8 border-t border-white/5">
-                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5">
-                            <h3 class="text-2xl font-bold text-white mb-3 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-white text-lg">
+                    <section id="doc-tiktok" class="reveal pt-6 border-t border-white/5">
+                        <div class="glass p-5 md:p-6 rounded-2xl mb-6 border border-white/5">
+                            <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-white text-sm">
                                     <i class="fa-brands fa-tiktok"></i>
                                 </div>
                                 TikTok Downloader
                             </h3>
-                            <p class="text-slate-400 mb-6 text-sm">Mengunduh video dari TikTok tanpa watermark menggunakan URL video.</p>
+                            <p class="text-slate-400 mb-5 text-sm">Mengunduh video dari TikTok tanpa watermark menggunakan URL video.</p>
                             
-                            <div class="flex flex-wrap items-center gap-3 mb-6 bg-black/30 p-4 rounded-xl">
-                                <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded font-bold text-sm">GET</span>
-                                <code class="text-slate-300 break-all">/api/downloader/tiktok?url={url_video}</code>
+                            <div class="flex flex-wrap items-center gap-3 mb-5 bg-black/30 p-3 rounded-xl">
+                                <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded font-bold text-xs">GET</span>
+                                <code class="text-slate-300 break-all text-sm">/api/downloader/tiktok?url={url_video}</code>
                             </div>
 
-                            <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Query Parameter</h4>
-                            <div class="overflow-x-auto mb-8">
-                                <table class="w-full text-left text-sm text-slate-400">
+                            <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider">Query Parameter</h4>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="w-full text-left text-xs md:text-sm text-slate-400 min-w-[500px]">
                                     <thead class="bg-white/5 text-slate-300">
                                         <tr>
-                                            <th class="px-4 py-3 rounded-tl-lg rounded-bl-lg">Parameter</th>
-                                            <th class="px-4 py-3">Tipe</th>
-                                            <th class="px-4 py-3">Wajib</th>
-                                            <th class="px-4 py-3 rounded-tr-lg rounded-br-lg">Deskripsi</th>
+                                            <th class="px-4 py-2 rounded-tl-lg rounded-bl-lg w-1/4">Parameter</th>
+                                            <th class="px-4 py-2 w-1/4">Tipe</th>
+                                            <th class="px-4 py-2 w-1/6">Wajib</th>
+                                            <th class="px-4 py-2 rounded-tr-lg rounded-br-lg">Deskripsi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr class="border-b border-white/5">
-                                            <td class="px-4 py-3 font-mono text-primary">url</td>
-                                            <td class="px-4 py-3">String</td>
-                                            <td class="px-4 py-3 text-green-400">Ya</td>
-                                            <td class="px-4 py-3">URL video TikTok yang valid.</td>
+                                            <td class="px-4 py-2 font-mono text-primary">url</td>
+                                            <td class="px-4 py-2">String</td>
+                                            <td class="px-4 py-2 text-green-400">Ya</td>
+                                            <td class="px-4 py-2">URL video TikTok yang valid.</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
                             <!-- Uji Coba Langsung TikTok -->
-                            <div class="mt-8 bg-black/40 border border-white/10 rounded-xl p-5">
-                                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <div class="mt-6 bg-black/40 border border-white/10 rounded-xl p-4">
+                                <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
                                     <i class="fa-solid fa-bolt text-yellow-400"></i> Uji Coba Langsung (Execute)
                                 </h4>
-                                <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                                    <input type="text" id="input-tiktok-url" placeholder="Masukkan URL TikTok..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-primary placeholder-slate-600">
-                                    <button onclick="executeApi('GET', '/api/downloader/tiktok', {url: document.getElementById('input-tiktok-url').value}, 'res-tiktok')" class="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2">
-                                        Execute <i class="fa-solid fa-play"></i>
+                                <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                                    <input type="text" id="input-tiktok-url" placeholder="Masukkan URL TikTok..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary placeholder-slate-600">
+                                    <button onclick="executeApi('GET', '/api/downloader/tiktok', {url: document.getElementById('input-tiktok-url').value}, 'res-tiktok')" class="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2">
+                                        Execute <i class="fa-solid fa-play text-xs"></i>
+                                    </button>
+                                    <button onclick="clearResponse('res-tiktok', 'input-tiktok-url')" class="bg-transparent border border-white/10 hover:bg-white/5 text-slate-300 px-5 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                                        Clear <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
                                 </div>
                                 <div class="relative">
-                                    <pre id="res-tiktok" class="p-5 rounded-xl text-sm overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[100px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
+                                    <pre id="res-tiktok" class="p-4 rounded-xl text-xs overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[80px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Section: Spotify Downloader -->
-                    <section id="doc-spotify" class="reveal pt-8 border-t border-white/5">
-                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5">
-                            <h3 class="text-2xl font-bold text-white mb-3 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-green-500 text-lg">
+                    <section id="doc-spotify" class="reveal pt-6 border-t border-white/5">
+                        <div class="glass p-5 md:p-6 rounded-2xl mb-6 border border-white/5">
+                            <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-500 text-sm">
                                     <i class="fa-brands fa-spotify"></i>
                                 </div>
                                 Spotify Downloader
                             </h3>
-                            <p class="text-slate-400 mb-6 text-sm">Mengunduh lagu atau album dari Spotify dalam format MP3 (Kualitas Tinggi) menggunakan URL Track/Album Spotify.</p>
+                            <p class="text-slate-400 mb-5 text-sm">Mengunduh lagu atau album dari Spotify dalam format MP3 (Kualitas Tinggi) menggunakan URL Track/Album Spotify.</p>
                             
-                            <div class="flex flex-wrap items-center gap-3 mb-6 bg-black/30 p-4 rounded-xl">
-                                <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded font-bold text-sm">GET</span>
-                                <code class="text-slate-300 break-all">/api/downloader/spotify?url={url_spotify}</code>
+                            <div class="flex flex-wrap items-center gap-3 mb-5 bg-black/30 p-3 rounded-xl">
+                                <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded font-bold text-xs">GET</span>
+                                <code class="text-slate-300 break-all text-sm">/api/downloader/spotify?url={url_spotify}</code>
                             </div>
 
-                            <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Query Parameter</h4>
-                            <div class="overflow-x-auto mb-8">
-                                <table class="w-full text-left text-sm text-slate-400">
+                            <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider">Query Parameter</h4>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="w-full text-left text-xs md:text-sm text-slate-400 min-w-[500px]">
                                     <thead class="bg-white/5 text-slate-300">
                                         <tr>
-                                            <th class="px-4 py-3 rounded-tl-lg rounded-bl-lg">Parameter</th>
-                                            <th class="px-4 py-3">Tipe</th>
-                                            <th class="px-4 py-3">Wajib</th>
-                                            <th class="px-4 py-3 rounded-tr-lg rounded-br-lg">Deskripsi</th>
+                                            <th class="px-4 py-2 rounded-tl-lg rounded-bl-lg w-1/4">Parameter</th>
+                                            <th class="px-4 py-2 w-1/4">Tipe</th>
+                                            <th class="px-4 py-2 w-1/6">Wajib</th>
+                                            <th class="px-4 py-2 rounded-tr-lg rounded-br-lg">Deskripsi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr class="border-b border-white/5">
-                                            <td class="px-4 py-3 font-mono text-primary">url</td>
-                                            <td class="px-4 py-3">String</td>
-                                            <td class="px-4 py-3 text-green-400">Ya</td>
-                                            <td class="px-4 py-3">URL Track / Album Spotify valid.</td>
+                                            <td class="px-4 py-2 font-mono text-primary">url</td>
+                                            <td class="px-4 py-2">String</td>
+                                            <td class="px-4 py-2 text-green-400">Ya</td>
+                                            <td class="px-4 py-2">URL Track / Album Spotify valid.</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
                             <!-- Uji Coba Langsung Spotify -->
-                            <div class="mt-8 bg-black/40 border border-white/10 rounded-xl p-5">
-                                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <div class="mt-6 bg-black/40 border border-white/10 rounded-xl p-4">
+                                <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
                                     <i class="fa-solid fa-bolt text-yellow-400"></i> Uji Coba Langsung (Execute)
                                 </h4>
-                                <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                                    <input type="text" id="input-spotify-url" placeholder="Masukkan URL Track/Album Spotify..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-green-500 placeholder-slate-600">
-                                    <button onclick="executeApi('GET', '/api/downloader/spotify', {url: document.getElementById('input-spotify-url').value}, 'res-spotify')" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(34,197,94,0.3)] flex items-center justify-center gap-2">
-                                        Execute <i class="fa-solid fa-play"></i>
+                                <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                                    <input type="text" id="input-spotify-url" placeholder="Masukkan URL Track/Album Spotify..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500 placeholder-slate-600">
+                                    <button onclick="executeApi('GET', '/api/downloader/spotify', {url: document.getElementById('input-spotify-url').value}, 'res-spotify')" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(34,197,94,0.3)] flex items-center justify-center gap-2">
+                                        Execute <i class="fa-solid fa-play text-xs"></i>
+                                    </button>
+                                    <button onclick="clearResponse('res-spotify', 'input-spotify-url')" class="bg-transparent border border-white/10 hover:bg-white/5 text-slate-300 px-5 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                                        Clear <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
                                 </div>
                                 <div class="relative">
-                                    <pre id="res-spotify" class="p-5 rounded-xl text-sm overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[100px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
+                                    <pre id="res-spotify" class="p-4 rounded-xl text-xs overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[80px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Section: AI -->
-                    <section id="doc-ai" class="reveal pt-8 border-t border-white/5">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
+                    <section id="doc-ai" class="reveal pt-6 border-t border-white/5">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">
                                 <i class="fa-solid fa-brain"></i>
                             </div>
-                            <h2 class="text-3xl font-bold text-white">Artificial Intelligence</h2>
+                            <h2 class="text-2xl font-bold text-white">Artificial Intelligence</h2>
                         </div>
                         
                         <!-- Endpoint: Chat AI -->
-                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5">
-                            <h3 class="text-2xl font-bold text-white mb-3">Ranzz ChatBot AI</h3>
-                            <p class="text-slate-400 mb-6 text-sm">Mengobrol dengan AI canggih untuk mendapatkan jawaban atas pertanyaan apa pun.</p>
+                        <div class="glass p-5 md:p-6 rounded-2xl mb-6 border border-white/5">
+                            <h3 class="text-xl font-bold text-white mb-2">Ranzz ChatBot AI</h3>
+                            <p class="text-slate-400 mb-5 text-sm">Mengobrol dengan AI canggih untuk mendapatkan jawaban atas pertanyaan apa pun.</p>
                             
-                            <div class="flex flex-wrap items-center gap-3 mb-6 bg-black/30 p-4 rounded-xl">
-                                <span class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded font-bold text-sm">POST</span>
-                                <code class="text-slate-300 break-all">/api/ai/chat</code>
+                            <div class="flex flex-wrap items-center gap-3 mb-5 bg-black/30 p-3 rounded-xl">
+                                <span class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-bold text-xs">POST</span>
+                                <code class="text-slate-300 break-all text-sm">/api/ai/chat</code>
                             </div>
 
-                            <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Body Request (JSON)</h4>
-                            <div class="overflow-x-auto mb-8">
-                                <table class="w-full text-left text-sm text-slate-400">
+                            <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider">Body Request (JSON)</h4>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="w-full text-left text-xs md:text-sm text-slate-400 min-w-[500px]">
                                     <thead class="bg-white/5 text-slate-300">
                                         <tr>
-                                            <th class="px-4 py-3 rounded-tl-lg rounded-bl-lg">Key</th>
-                                            <th class="px-4 py-3">Tipe</th>
-                                            <th class="px-4 py-3">Wajib</th>
-                                            <th class="px-4 py-3 rounded-tr-lg rounded-br-lg">Deskripsi</th>
+                                            <th class="px-4 py-2 rounded-tl-lg rounded-bl-lg w-1/4">Key</th>
+                                            <th class="px-4 py-2 w-1/4">Tipe</th>
+                                            <th class="px-4 py-2 w-1/6">Wajib</th>
+                                            <th class="px-4 py-2 rounded-tr-lg rounded-br-lg">Deskripsi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr class="border-b border-white/5">
-                                            <td class="px-4 py-3 font-mono text-primary">message</td>
-                                            <td class="px-4 py-3">String</td>
-                                            <td class="px-4 py-3 text-green-400">Ya</td>
-                                            <td class="px-4 py-3">Pesan teks yang ingin dikirimkan ke AI.</td>
+                                            <td class="px-4 py-2 font-mono text-primary">message</td>
+                                            <td class="px-4 py-2">String</td>
+                                            <td class="px-4 py-2 text-green-400">Ya</td>
+                                            <td class="px-4 py-2">Pesan teks yang ingin dikirimkan ke AI.</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
                             <!-- Uji Coba Langsung AI -->
-                            <div class="mt-8 bg-black/40 border border-white/10 rounded-xl p-5">
-                                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <div class="mt-6 bg-black/40 border border-white/10 rounded-xl p-4">
+                                <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
                                     <i class="fa-solid fa-bolt text-yellow-400"></i> Uji Coba Langsung (Execute)
                                 </h4>
-                                <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                                    <input type="text" id="input-ai-msg" placeholder="Ketik pesan Anda untuk AI..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 placeholder-slate-600">
-                                    <button onclick="executeApi('POST', '/api/ai/chat', {message: document.getElementById('input-ai-msg').value}, 'res-ai')" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center gap-2">
-                                        Execute <i class="fa-solid fa-play"></i>
+                                <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                                    <input type="text" id="input-ai-msg" placeholder="Ketik pesan Anda untuk AI..." class="flex-1 bg-[#0B0F19] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 placeholder-slate-600">
+                                    <button onclick="executeApi('POST', '/api/ai/chat', {message: document.getElementById('input-ai-msg').value}, 'res-ai')" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center gap-2">
+                                        Execute <i class="fa-solid fa-play text-xs"></i>
+                                    </button>
+                                    <button onclick="clearResponse('res-ai', 'input-ai-msg')" class="bg-transparent border border-white/10 hover:bg-white/5 text-slate-300 px-5 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                                        Clear <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
                                 </div>
                                 <div class="relative">
-                                    <pre id="res-ai" class="p-5 rounded-xl text-sm overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[100px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
+                                    <pre id="res-ai" class="p-4 rounded-xl text-xs overflow-x-auto font-mono bg-[#05080f] border border-white/5 text-slate-400 min-h-[80px]"><code>// Hasil respons API akan tampil di sini...</code></pre>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Section: Tools & Search (Placeholder) -->
-                    <section id="doc-tools" class="reveal pt-8 border-t border-white/5">
-                        <div class="glass p-6 md:p-8 rounded-2xl mb-8 border border-white/5 text-center py-12">
-                            <i class="fa-solid fa-person-digging text-5xl text-slate-500 mb-4"></i>
-                            <h3 class="text-2xl font-bold text-white mb-2">Tools & Search API</h3>
+                    <section id="doc-tools" class="reveal pt-6 border-t border-white/5">
+                        <div class="glass p-5 md:p-6 rounded-2xl mb-6 border border-white/5 text-center py-10">
+                            <i class="fa-solid fa-person-digging text-4xl text-slate-500 mb-3"></i>
+                            <h3 class="text-xl font-bold text-white mb-2">Tools & Search API</h3>
                             <p class="text-slate-400 text-sm max-w-md mx-auto">Dokumentasi untuk kategori ini sedang dalam tahap penulisan dan akan tersedia pada pembaruan mendatang.</p>
                         </div>
                     </section>
@@ -764,6 +773,20 @@
                 icon.classList.add('fa-xmark');
             }
         });
+        
+        // --- Clear Response API ---
+        function clearResponse(resultId, inputId) {
+            const resultEl = document.getElementById(resultId);
+            const inputEl = document.getElementById(inputId);
+            
+            // Reset box teks respons
+            resultEl.innerHTML = `<code>// Hasil respons API akan tampil di sini...</code>`;
+            
+            // Hapus isi teks input form jika ada
+            if(inputEl) {
+                inputEl.value = '';
+            }
+        }
 
         // --- Execute API Function (Live Test) ---
         async function executeApi(method, endpoint, data, resultId) {
